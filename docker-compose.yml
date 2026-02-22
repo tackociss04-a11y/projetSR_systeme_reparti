@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:4173"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/projetsr
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: projetsr
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # Pour initialiser la base avec le schéma :
+    # Copie le fichier schema.sql dans ./db-init et décommente les lignes suivantes :
+    # volumes:
+    #   - ./db-init:/docker-entrypoint-initdb.d
+
+volumes:
+  db_data:

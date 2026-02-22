@@ -1,0 +1,43 @@
+.homeContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f4f8;
+    font-family: 'Arial', sans-serif;
+}
+
+.serviceDescription {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.signupButton,
+.loginButton {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.signupButton {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.signupButton:hover {
+    background-color: #45a049;
+}
+
+.loginButton {
+    background-color: #008CBA;
+    color: white;
+}
+
+.loginButton:hover {
+    background-color: #007bb5;
+}

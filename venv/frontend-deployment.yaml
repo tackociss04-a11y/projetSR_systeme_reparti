@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: projetsr-frontend:latest
+          imagePullPolicy: Never  # <--- INDISPENSABLE
+          ports:
+            - containerPort: 4173 # Port interne de ton appli React/Vite
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  type: NodePort
+  ports:
+    - port: 4173
+      targetPort: 4173
+      nodePort: 30173     # Ce port doit être libre (supprime l'ancien service avant)
+  selector:
+    app: frontend

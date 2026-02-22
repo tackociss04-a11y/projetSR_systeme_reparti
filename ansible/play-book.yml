@@ -1,0 +1,65 @@
+---
+- name: Installation et Déploiement Automatisé de l'Application
+  hosts: localhost
+  become: yes
+  tasks:
+    # 0. PRÉPARATION PYTHON POUR DOCKER
+    - name: Installer la bibliothèque Python Docker pour Ansible
+      apt:
+        name: python3-docker
+        state: present
+        update_cache: yes
+
+    # 1. INSTALLATION & VÉRIFICATION DOCKER
+    - name: Vérifier si Docker est installé
+      command: docker --version
+      register: docker_check
+      ignore_errors: yes
+
+    - name: Installer Docker si absent
+      apt:
+        name: docker.io
+        state: present
+      when: docker_check.failed
+
+    # 2. INSTALLATION & VÉRIFICATION KUBERNETES
+    - name: Vérifier si kubectl est installé
+      command: kubectl version --client
+      register: kubectl_check
+      ignore_errors: yes
+
+    - name: Installer kubectl si absent
+      get_url:
+        url: https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+      when: kubectl_check.failed
+
+    # 3. INSTALLATION JENKINS VIA DOCKER
+    - name: Créer un volume pour la persistance des données Jenkins
+      docker_volume:
+        name: jenkins_data
+        state: present
+        docker_host: "unix:///home/tacko/.docker/desktop/docker.sock" # <--- Chemin spécifique Docker Desktop
+
+    - name: Lancer le conteneur Jenkins
+      docker_container:
+        name: jenkins
+        image: jenkins/jenkins:lts
+        state: started
+        restart_policy: always
+        docker_host: "unix:///home/tacko/.docker/desktop/docker.sock" # <--- Chemin spécifique Docker Desktop
+        ports:
+          - "8080:8080"
+          - "50000:50000"
+        volumes:
+          - jenkins_data:/var/jenkins_home
+
+    # 4. DÉPLOIEMENT DE L'APPLICATION (FIXFLOW)
+    - name: Appliquer les fichiers Kubernetes (PVC, Déploiements, Services)
+      shell: |
+        kubectl apply -f /home/tacko/Documents/projetSR/k8s/postgres-pvc.yaml
+        kubectl apply -f /home/tacko/Documents/projetSR/k8s/postgres-deployment.yaml
+        kubectl apply -f /home/tacko/Documents/projetSR/k8s/backend-deployment.yaml
+        kubectl apply -f /home/tacko/Documents/projetSR/k8s/frontend-deployment.yaml
+      become_user: tacko

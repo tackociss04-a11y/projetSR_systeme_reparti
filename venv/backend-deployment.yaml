@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: projetsr-backend:latest
+          imagePullPolicy: Never  # <--- INDISPENSABLE pour ton image locale
+          ports:
+            - containerPort: 5000  # Port interne Flask/Python
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  type: ClusterIP          # Le backend n'a pas besoin de NodePort (seul le frontend y accède)
+  ports:
+    - port: 5000           # Port exposé dans le cluster
+      targetPort: 5000
+  selector:
+    app: backend
